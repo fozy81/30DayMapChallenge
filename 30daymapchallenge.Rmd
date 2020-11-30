@@ -1,0 +1,602 @@
+---
+title: "#30DayMapChallenge"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
+```
+
+# Intro
+
+Very quick maps using open and R. For fun and exploration. #30DayMapChallenge
+
+# Day 1: Points
+
+Get points from OpenStreetMap and display
+
+```{r, echo=F, warning=F, message=F}
+#  install.packages(c("tidyverse", "osmdata", "sf"))
+library(osmdata) 
+library(sf)
+library(tidyverse)
+```
+
+```{r }
+#  install.packages(c("tidyverse", "osmdata", "sf"))
+library(osmdata) 
+library(sf)
+library(tidyverse)
+
+glasgow_pubs <-  getbb(place_name = "glasgow uk") %>%
+  opq() %>%
+  add_osm_feature("amenity", "pub") %>% 
+  osmdata_sf()
+
+plot(st_geometry(glasgow_pubs$osm_points$geometry),
+     cex = 0.3,
+     col = "darkgreen",
+     border = "darkgreen",
+     main ="Glasgow pubs")
+
+```
+
+## Day 2: Lines
+
+
+```{r}
+#  install.packages(c("tidyverse", "osmdata", "sf"))
+library(osmdata) 
+library(sf)
+library(tidyverse)
+
+
+glasgow_cyclepath <- getbb(place_name = "glasgow uk") %>%
+  opq() %>%
+  add_osm_feature("highway", "cycleway") %>% 
+  osmdata_sf()
+
+
+plot(st_geometry(glasgow_cyclepath$osm_lines),
+     cex = 0.3,
+     col = "red",
+     main = "Glasgow cycle paths")
+
+
+```
+
+# Day 3 Polygons
+
+```{r}
+# install.packages(c("devtools", "tidyverse"))
+# devtools::install_github("fozy81/scotmaps")
+library(scotmaps)
+library(tidyverse)
+
+ma <- marine_areas()
+plot(st_geometry(ma), col = "lightblue", border = "grey", main = "Marine Areas")
+
+
+
+```
+
+# Day 4 Hexagons
+
+```{r}
+#  install.packages(c("devtools", "tidyverse"))
+library(osmdata) 
+library(sf)
+library(tidyverse)
+
+bicycles_parking <-  getbb(place_name = "glasgow uk") %>%
+  opq() %>%
+  add_osm_feature("amenity", "bicycle_parking") %>% 
+  osmdata_sf()
+
+glasgow <- getbb(place_name = "glasgow city uk", format_out = "sf_polygon") 
+
+hex <- st_make_grid(glasgow, cellsize = .01, square = FALSE, what = "polygon") 
+hex <- st_sf(hex)
+hex$id <- seq_along(hex$hex)
+hex$glasgow <- 1
+hex <- st_join(hex, bicycles_parking$osm_points, left = FALSE) 
+hex <-  group_by(hex, id) %>% summarise(sum(glasgow))
+hex <- st_sf(hex)
+
+plot(hex["sum(glasgow)"], main = "Glasgow bicycle parking")
+
+
+
+
+
+```
+
+
+# Day 5 Blue
+
+
+```{r}
+#  install.packages(c("devtools", "tidyverse"))
+library(osmdata) 
+library(sf)
+library(tidyverse)
+
+blue <-  getbb(place_name = "glasgow uk") %>%
+  opq() %>%
+  add_osm_feature(key = "name", value = "blue", value_exact = FALSE, match_case = FALSE) %>% 
+  osmdata_sf()
+
+blue <- blue$osm_points
+blue <- blue[grep("blue", blue$name, ignore.case = T), ]
+
+blue$name <- as.factor(blue$name)
+ggplot() +
+  geom_sf(blue, mapping = aes(fill = name, colours = "blue")) +
+  labs(title = "Glasgow blue places")
+
+```
+
+
+# Day 6 Red
+
+
+```{r}
+#  install.packages(c("devtools", "tidyverse"))
+library(osmdata) 
+library(sf)
+library(tidyverse)
+
+colours = "red"
+
+colour <-  getbb(place_name = "glasgow uk") %>%
+  opq() %>%
+  add_osm_feature(key = "name", value = paste(colours), value_exact = FALSE, match_case = FALSE) %>% 
+  osmdata_sf()
+
+colour <- colour$osm_points
+colour <- colour[grep(colours, colour$name, ignore.case = T), ]
+
+colour$name <- as.factor(colour$name)
+ggplot() +
+  geom_sf(colour, mapping = aes(fill = name, colours = paste(colours))) +
+  labs(title = "Glasgow red places") + theme(legend.position = "bottom")
+
+```
+
+# Day 7 Green
+
+
+```{r}
+#  install.packages(c("devtools", "tidyverse"))
+library(osmdata) 
+library(sf)
+library(tidyverse)
+
+colours = "green"
+
+colour <-  getbb(place_name = "glasgow uk") %>%
+  opq() %>%
+  add_osm_feature(key = "name", value = paste(colours), value_exact = FALSE, match_case = FALSE) %>% 
+  osmdata_sf()
+
+colour <- colour$osm_points
+colour <- colour[grep(colours, colour$name, ignore.case = T), ]
+
+colour$name <- as.factor(colour$name)
+ggplot() +
+  geom_sf(colour, mapping = aes(fill = name, colours = paste(colours))) +
+  labs(title = "Glasgow green places") + theme(legend.position = "bottom")
+
+```
+
+# Day 8 Yellow
+
+
+```{r}
+#  install.packages(c("devtools", "tidyverse"))
+library(osmdata) 
+library(sf)
+library(tidyverse)
+
+colours = "yellow"
+
+colour <-  getbb(place_name = "glasgow uk") %>%
+  opq() %>%
+  add_osm_feature(key = "name", value = paste(colours), value_exact = FALSE, match_case = FALSE) %>% 
+  osmdata_sf()
+
+colour <- colour$osm_points
+colour <- colour[grep(colours, colour$name, ignore.case = T), ]
+
+colour$name <- as.factor(colour$name)
+ggplot() +
+  geom_sf(colour, mapping = aes(fill = name, colours = paste(colours))) +
+  labs(title = "Glasgow yellow places") + theme(legend.position = "bottom")
+
+```
+
+
+# Day 9 Monochrome
+
+
+```{r}
+#  install.packages(c("devtools", "tidyverse", "osmdata"))
+# devtools::install_github("fozy81/scotmaps")
+library(scotmaps)
+library(osmdata) 
+library(sf)
+library(tidyverse)
+
+
+mono <-  getbb(place_name = "carluke scotland") %>%
+  opq() %>%
+  osmdata_sf()
+
+ cc <- community_councils()
+ carluke <- cc[cc$cc_name == "Carluke", ]
+
+mono <- mono$osm_points
+mono <- st_transform(mono, crs = 27700)
+
+test <- st_intersection(mono, carluke)
+
+plot(st_geometry(test), col = "black", cex = 0.01)
+
+
+```
+
+
+# Day 10 Grid
+
+```{r}
+#  install.packages(c("devtools", "tidyverse", "osmdata"))
+# devtools::install_github("fozy81/scotmaps")
+library(scotmaps)
+library(osmdata) 
+library(sf)
+library(tidyverse)
+
+
+la <- local_authorities()
+
+cust_label <- function(x) {
+  x <- abs(as.numeric(x))
+  la$local_authority <- as.character(la$local_authority)
+  la <- la %>% arrange(desc(hectares))
+  paste0(la$local_authority[la$hectares %in% x])
+}
+
+ggplot(la) +
+  geom_sf(fill = "lightgreen") +
+  theme_void() +
+  facet_wrap(vars(desc(hectares)),
+             labeller = as_labeller(cust_label),
+             strip.position = "bottom"
+              ) +
+  theme(
+    strip.background = element_blank()
+  ) +
+  labs(title = "Scottish Local Authorities")
+
+
+
+```
+
+
+# Day 11: 3D
+
+```{r}
+# devtools::install_github("tylermorganwall/rayshader")
+# devtools::install_github("datasciencescotland/opendatascot")
+library(rayshader)
+library(scotmaps)
+library(opendatascot)
+library(tidyverse)
+
+# Immunisation data
+la <- local_authorities()
+
+immune <- ods_dataset("6-in-1-immunisation", geography = "la")
+immune <- immune %>% filter(vaccinationUptake == "vaccinated-by-24-months", 
+                     measureType == "ratio",
+                     refPeriod == 2018)
+immune <- immune %>% mutate(value = as.numeric(value))
+# Join to local authority spatial layer
+la_immune <- inner_join(la, immune, by = c("code" = "refArea"))
+
+p2 <- la_immune %>% 
+ ggplot() +
+  geom_sf(aes(fill = value)) +
+  scale_fill_viridis_c("Ratio") +
+  theme_bw() +
+  labs(title="6-in-1-immunisation by 24 months (2018)") +
+  theme(plot.title = element_text(hjust = 1))
+
+
+
+plot_gg(p2, width = 6, height=2.7)
+render_camera(zoom = 0.4, theta = -45, phi = 30)
+Sys.sleep(0.2)
+render_snapshot()
+rgl::rgl.close()
+
+
+```
+
+# Day 12: Not GIS software
+
+#########x
+#########x
+#######x##
+####xxx###
+#x##xxx###
+xx#xxxxxxx
+x##xxxxxx#
+###xxxxx##
+#xxxxxx###
+#x#xxxxxx#
+#X#xxxx###
+##xxxxxxx#
+
+
+# Day 13: Raster
+
+```{r, results="asis"}
+library(osmdata)
+library(leaflet)
+library(tidyverse)
+
+monuments <- getbb("carluke") %>% 
+  opq() %>% 
+  add_osm_feature(key = "historic", value = "memorial") %>% 
+  osmdata_sf()
+
+monuments$osm_points %>%
+  head(5) %>%
+  leaflet() %>%
+  addTiles() %>%
+  addMarkers(popup = paste(monuments$osm_points$name))
+
+
+
+```
+
+# 14 Day: climate change
+
+```{r}
+# devtools::install_github("datasciencescotland/opendatascot")
+library(opendatascot)
+library(scotmaps)
+library(tidyverse)
+library(sf)
+
+risk <- ods_dataset("dwellings-in-flood-risk-areas", geography = "la")
+
+risk <- select(risk , floodRiskArea, value, refArea)
+risk$value <- as.numeric(risk$value)
+risk <- pivot_wider(risk, names_from =  floodRiskArea, values_from = value)
+
+la <- local_authorities()
+
+la <- inner_join(la, risk, by = c("code" = "refArea"))
+
+plot(la[c("fluvial", "coastal", "coastal-or-fluvial")], main ="Flood Risk")
+
+```
+
+
+# Day 15: Connections
+
+```{r}
+#  install.packages(c("tidyverse", "osmdata"))
+library(osmdata)
+library(tidyverse)
+
+ferry <- getbb("islay scotland") %>% 
+  opq() %>% 
+  
+  add_osm_feature(key = "route", value = "ferry") %>% 
+  osmdata_sf()
+
+
+ ferry$osm_lines %>%
+  leaflet() %>%
+  addTiles() %>%
+  addPolylines(popup = paste(ferry$osm_lines$name)) 
+
+```
+
+# Day 16: Islands
+
+```{r}
+#  install.packages(c("tidyverse", "osmdata"))
+library(osmdata)
+library(tidyverse)
+
+
+islay <- getbb("islay uk") %>% 
+  opq() %>% 
+  add_osm_feature(key = "distillery", value = "whisky") %>% 
+  osmdata_sf()
+
+
+ islay$osm_polygons %>%
+  leaflet() %>%
+  addTiles() %>%
+  addPolylines(popup = paste(islay$osm_polygons$name)) 
+
+```
+
+# Day 17: Historic
+
+Historic Castles
+
+```{r}
+# install.packages(c("devtools", "tidyverse", "osmdata"))
+library(osmdata)
+library(tidyverse)
+
+battles <- getbb("northumberland uk") %>% 
+  opq() %>% 
+  add_osm_feature(key = "historic", value = "castle") %>% 
+  osmdata_sf()
+
+ battles$osm_polygons %>%
+  leaflet() %>%
+  addTiles() %>%
+  addPolylines(popup = paste(battles$osm_polygons$name)) 
+
+```
+
+# Day 18: Landuse 
+
+```{r}
+# install.packages(c("tidyverse", "osmdata"))
+library(osmdata)
+library(tidyverse)
+
+kelso <- getbb("kelso scotland") %>% 
+  opq() %>% 
+  add_osm_feature(key = "natural") %>% 
+  osmdata_sf()
+
+kelso <- kelso$osm_polygons
+
+ggplot() +
+  geom_sf(kelso, mapping = aes(colour = natural, fill = natural)) +
+  labs(title = "Natural Landuse Kelso") +
+  theme_void() 
+
+
+```
+
+# Day 19: NULL
+
+```{r}
+# install.packages(c("tidyverse", "osmdata"))
+library(osmdata)
+library(sf)
+
+null <- 
+  opq(bbox = c(0.00,0.00,0.00,0.00)) %>% 
+  osmdata_sf() 
+  
+
+plot(st_geometry(null$osm_points), main = "NULL")
+
+```
+
+
+# Day 20 Population
+
+```{r}
+# devtools::install_github("datasciencescotland/opendatascot")
+# install.packages(c("tidyverse", "osmdata"))
+library(scotmaps)
+library(opendatascot)
+library(tidyverse)
+
+datasets <- ods_all_datasets()
+ods_structure("population-projections-2018-based")
+
+pop <- ods_dataset("population-projections-2018-based",
+                   geography = "la",
+                   refPeriod = "2043")
+
+pop20 <- ods_dataset("population-projections-2018-based",
+                   geography = "la",
+                   refPeriod = "2020")
+
+pop$value <- as.numeric(pop$value)
+pop20$value <- as.numeric(pop20$value)
+ pop$diff  <- 1 /  pop$value *  (pop$value - pop20$value)
+
+test <- filter(pop, sex == "all", populationProjectionVariant == "principal-projection") %>% 
+  mutate(refArea = as.factor(refArea), value = as.numeric(diff)) %>% 
+  select(refArea, diff) %>% 
+  group_by(refArea) %>% 
+  summarise(total = sum(diff))
+
+la <- local_authorities()
+
+la <- inner_join(la, test, by = c("code" = "refArea"))
+
+ggplot() +
+  geom_sf(la, mapping = aes(fill = total)) +
+  labs(title = "2020-43 Predicted Population % Change")
+
+```
+
+# Day 21: Water
+
+
+River Clyde
+
+```{r, results="asis"}
+# install.packages(c("tidyverse", "osmdata", "leaflet"))
+library(osmdata)
+library(tidyverse)
+library(leaflet)
+
+river <- 
+  opq(bbox = "scotland") %>% 
+  add_osm_feature(key = "waterway", value = "river") %>% 
+  add_osm_feature(key = "name", value = "River Clyde" ) %>% 
+  osmdata_sf() 
+  
+ river$osm_lines %>% 
+ leaflet() %>% 
+   addTiles() %>% 
+   addPolylines()
+ 
+
+```
+
+
+# Day 22: Movement
+
+Marinas around island of Ireland
+```{r}
+# install.packages(c("tidyverse", "osmdata"))
+library(osmdata)
+library(tidyverse)
+
+marina <- 
+  opq(bbox = "Ireland") %>% 
+  add_osm_feature(key = "leisure", value = "marina") %>% 
+  osmdata_sf() 
+  
+plot(st_geometry(marina$osm_polygons))
+plot(st_geometry(marina$osm_multipolygons), add = TRUE)
+plot(st_geometry(marina$osm_points), add = TRUE, col = "darkgreen")
+
+```
+
+
+# Day 23 Boundaries
+
+```{r}
+# install.packages(c("tidyverse", "osmdata"))
+library(osmdata)
+library(tidyverse)
+
+border <-
+opq(bbox = "Baarle-Hertog") %>% 
+  add_osm_feature(key = "boundary", value = "administrative") %>% 
+   add_osm_feature(key = "border_type", value = "nation") %>% 
+  osmdata_sf()
+
+plot(st_geometry(border$osm_polygons))
+plot(st_geometry(border$osm_lines), add=TRUE)
+plot(st_geometry(border$osm_multilines), add=TRUE)
+
+```
+
+
+# Day 24: Elevation
+
+
+
+
